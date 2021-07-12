@@ -15,7 +15,7 @@
     "clean:contracts": "rimraf build",
     "compile": "waffle waffle.json && yarn typechain",
     "typechain": "typechain --target ethers-v5 --outDir build 'build/*.json'",
-    "deploy": "node dist/src/deploy-EndowedERC20.js ../secrets/deployment-endowedErc20.json"
+    "deploy": "node dist/src/index.js secrets/deployment.json"
   },
   "dependencies": {
      "typescript": "4.1.2"

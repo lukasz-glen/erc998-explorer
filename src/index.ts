@@ -1,6 +1,6 @@
 import {readFileSync} from 'fs';
 import {getDefaultProvider, Wallet} from 'ethers';
-import {deployErc998Explorer} from '../build/deploy';
+import {deployErc998Explorer} from './deploy';
 
 async function run(args: string[]) {
     if (args.length !== 1) {

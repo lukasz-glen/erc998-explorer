@@ -47,7 +47,7 @@ contract ERC998Explorer {
         return allTokenChildren;
     }
 
-    function getErc721(address erc998, uint256 tokenId) public view returns (TokenChildren memory) {
+    function getErc721ByToken(address erc998, uint256 tokenId) public view returns (TokenChildren memory) {
         IERC998ERC721TopDownEnumerable target = IERC998ERC721TopDownEnumerable(erc998);
         uint256 tcc = target.totalChildContracts(tokenId);
         TokenChildren memory tokenChildrenData = TokenChildren({childTokens: new ChildTokens[](tcc)});
@@ -85,7 +85,7 @@ contract ERC998Explorer {
         return allTokenErc20s;
     }
 
-    function getErc20(address erc998, uint256 tokenId) public view returns (TokenErc20s memory) {
+    function getErc20ByToken(address erc998, uint256 tokenId) public view returns (TokenErc20s memory) {
         IERC998ERC20TopDownEnumerable target = IERC998ERC20TopDownEnumerable(erc998);
         IERC998ERC20TopDown target_ = IERC998ERC20TopDown(erc998);
         uint256 tec = target.totalERC20Contracts(tokenId);
@@ -98,4 +98,18 @@ contract ERC998Explorer {
         }
         return tokenErc20sData;
     }
+
+    function getData(address erc998, uint256 limitChildContracts, uint256 limitChildTokenIds, uint256 limitErc20Contracts,
+                     uint256[] calldata tokenIds) public view returns (TokenChildren[] memory, TokenErc20s[] memory) {
+        TokenChildren[] memory allTokenChildren = getErc721(erc998, limitChildContracts, limitChildTokenIds, tokenIds);
+        TokenErc20s[] memory allTokenErc20s = getErc20(erc998, limitErc20Contracts, tokenIds);
+        return (allTokenChildren, allTokenErc20s);
+    }
+
+    function getDataByToken(address erc998, uint256 tokenId) public view returns (TokenChildren memory, TokenErc20s memory) {
+        TokenChildren memory tokenChildrenData = getErc721ByToken(erc998, tokenId);
+        TokenErc20s memory tokenErc20sData = getErc20ByToken(erc998, tokenId);
+        return (tokenChildrenData, tokenErc20sData);
+    }
+
 }

@@ -11,9 +11,4 @@ describe('Test 1', () => {
         await deployErc998Explorer(deployer);
     });
 
-    it('Read 1', async () => {
-        await deployErc998Explorer(deployer);
-    });
-
-
 });
