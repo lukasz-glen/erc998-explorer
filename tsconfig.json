@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "declaration": true,
+      "esModuleInterop": true,
+      "lib": [
+        "ES2018"
+      ],
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "skipLibCheck": true,
+      "strict": true,
+      "target": "ES2018",
+      "declarationMap": true,
+      "sourceMap": true
+    }
+  }
