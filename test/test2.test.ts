@@ -16,9 +16,10 @@ describe('Test 2', () => {
     const deployer = new Wallet(deployment.privateKey, provider);
 
     it('Read from erc998', async () => {
-        let erc998Explorer = Erc998ExplorerFactory.connect("0xcfD18592Aa9cAf6fC8E8b63Fe92F3AF4e3E9eC9e", deployer);
+        let erc998Explorer = Erc998ExplorerFactory.connect("0x1d4Da5EA62103539D93d79327Bf72d29490366Cb", deployer);
         let data1 = await erc998Explorer.getDataByToken(erc998Address, 3);
         let data2 = await erc998Explorer.getData(erc998Address, 1, 1, 1, [1, 3, 5, 7]);
+        console.log(data2[0]);
     });
 
 });

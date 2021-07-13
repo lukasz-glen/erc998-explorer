@@ -12,6 +12,7 @@ contract ERC998Explorer {
         uint256[] childTokenIds;
     }
     struct TokenChildren {
+        uint256 totalChildContracts;
         ChildTokens[] childTokens;
     }
     struct Erc20Tokens {
@@ -19,6 +20,7 @@ contract ERC998Explorer {
         uint256 amount;
     }
     struct TokenErc20s {
+        uint256 totalERC20Contracts;
         Erc20Tokens[] erc20Tokens;
     }
 
@@ -30,7 +32,7 @@ contract ERC998Explorer {
             uint256 tokenId = tokenIds[i];
             uint256 tcc = target.totalChildContracts(tokenId);
             uint256 maxChildContracts = tcc < limitChildContracts ? tcc : limitChildContracts;
-            TokenChildren memory tokenChildrenData = TokenChildren({childTokens: new ChildTokens[](maxChildContracts)});
+            TokenChildren memory tokenChildrenData = TokenChildren({totalChildContracts: tcc, childTokens: new ChildTokens[](maxChildContracts)});
             allTokenChildren[i] = tokenChildrenData;
             for (uint256 j = 0; j < maxChildContracts; j++) {
                 address childContract = target.childContractByIndex(tokenId, j);
@@ -50,7 +52,7 @@ contract ERC998Explorer {
     function getErc721ByToken(address erc998, uint256 tokenId) public view returns (TokenChildren memory) {
         IERC998ERC721TopDownEnumerable target = IERC998ERC721TopDownEnumerable(erc998);
         uint256 tcc = target.totalChildContracts(tokenId);
-        TokenChildren memory tokenChildrenData = TokenChildren({childTokens: new ChildTokens[](tcc)});
+        TokenChildren memory tokenChildrenData = TokenChildren({totalChildContracts: tcc, childTokens: new ChildTokens[](tcc)});
         for (uint256 j = 0; j < tcc; j++) {
             address childContract = target.childContractByIndex(tokenId, j);
             uint256 tct = target.totalChildTokens(tokenId, childContract);
@@ -73,7 +75,7 @@ contract ERC998Explorer {
             uint256 tokenId = tokenIds[i];
             uint256 tec = target.totalERC20Contracts(tokenId);
             uint256 maxErc20Contracts = tec < limitErc20Contracts ? tec : limitErc20Contracts;
-            TokenErc20s memory tokenErc20sData = TokenErc20s({erc20Tokens: new Erc20Tokens[](maxErc20Contracts)});
+            TokenErc20s memory tokenErc20sData = TokenErc20s({totalERC20Contracts: tec, erc20Tokens: new Erc20Tokens[](maxErc20Contracts)});
             allTokenErc20s[i] = tokenErc20sData;
             for (uint256 j = 0; j < maxErc20Contracts; j++) {
                 address erc20Contract = target.erc20ContractByIndex(tokenId, j);
@@ -89,7 +91,7 @@ contract ERC998Explorer {
         IERC998ERC20TopDownEnumerable target = IERC998ERC20TopDownEnumerable(erc998);
         IERC998ERC20TopDown target_ = IERC998ERC20TopDown(erc998);
         uint256 tec = target.totalERC20Contracts(tokenId);
-        TokenErc20s memory tokenErc20sData = TokenErc20s({erc20Tokens: new Erc20Tokens[](tec)});
+        TokenErc20s memory tokenErc20sData = TokenErc20s({totalERC20Contracts: tec, erc20Tokens: new Erc20Tokens[](tec)});
         for (uint256 j = 0; j < tec; j++) {
             address erc20Contract = target.erc20ContractByIndex(tokenId, j);
             uint256 balance = target_.balanceOfERC20(tokenId, erc20Contract);
