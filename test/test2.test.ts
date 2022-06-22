@@ -8,7 +8,7 @@ import {solidity} from 'ethereum-waffle';
 use(solidity);
 
 describe('Test 2', () => {
-    const erc998Address = '0x4d31d9B48CDBe23AcE6F5A46E5c54C4B3d59B920';
+    const erc998Address = '0xA7aCE4695d56762572812B9F1E6c91FAdD46cA30';
 
     const deploymentFile = readFileSync('secrets/deployment.json', 'utf8');
     const deployment = JSON.parse(deploymentFile);
@@ -16,9 +16,10 @@ describe('Test 2', () => {
     const deployer = new Wallet(deployment.privateKey, provider);
 
     it('Read from erc998', async () => {
-        let erc998Explorer = Erc998ExplorerFactory.connect("0x1d4Da5EA62103539D93d79327Bf72d29490366Cb", deployer);
-        let data1 = await erc998Explorer.getDataByToken(erc998Address, 3);
-        let data2 = await erc998Explorer.getData(erc998Address, 1, 1, 1, [1, 3, 5, 7]);
+        let erc998Explorer = Erc998ExplorerFactory.connect("0xf0C659F430C1F05f62283e916B631f84e8DB3F4F", deployer);
+        let data1 = await erc998Explorer.getDataByToken(erc998Address, 1);
+        console.log(data1)
+        let data2 = await erc998Explorer.getData(erc998Address, 1, 1, 1, 1, 1, [1, 3, 5, 7]);
         console.log(data2[0]);
     });
 

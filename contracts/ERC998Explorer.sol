@@ -5,6 +5,8 @@ pragma solidity ^0.8.0;
 import "./interfaces/IERC998ERC721TopDownEnumerable.sol";
 import "./interfaces/IERC998ERC20TopDownEnumerable.sol";
 import "./interfaces/IERC998ERC20TopDown.sol";
+import "./interfaces/IERC998ERC1155TopDownEnumerable.sol";
+import "./interfaces/IERC998ERC1155TopDown.sol";
 
 contract ERC998Explorer {
     struct ChildTokens {
@@ -22,6 +24,19 @@ contract ERC998Explorer {
     struct TokenErc20s {
         uint256 totalERC20Contracts;
         Erc20Tokens[] erc20Tokens;
+    }
+    struct Erc1155Tokens {
+        uint256 erc1155TokenId;
+        uint256 amount;
+    }
+    struct Erc1155Contracts {
+        address erc1155Contract;
+        uint256 totalERC1155Tokens;
+        Erc1155Tokens[] erc1155Tokens;
+    }
+    struct TokenErc1155s {
+        uint256 totalERC1155Contracts;
+        Erc1155Contracts[] erc1155Contracts;
     }
 
     function getErc721(address erc998, uint256 limitChildContracts, uint256 limitChildTokenIds, uint256[] calldata tokenIds) public view returns (TokenChildren[] memory) {
@@ -101,17 +116,65 @@ contract ERC998Explorer {
         return tokenErc20sData;
     }
 
-    function getData(address erc998, uint256 limitChildContracts, uint256 limitChildTokenIds, uint256 limitErc20Contracts,
-                     uint256[] calldata tokenIds) public view returns (TokenChildren[] memory, TokenErc20s[] memory) {
-        TokenChildren[] memory allTokenChildren = getErc721(erc998, limitChildContracts, limitChildTokenIds, tokenIds);
-        TokenErc20s[] memory allTokenErc20s = getErc20(erc998, limitErc20Contracts, tokenIds);
-        return (allTokenChildren, allTokenErc20s);
+    function getErc1155(address erc998, uint256 limitErc1155Contracts, uint256 limitErc1155TokenIds, uint256[] calldata tokenIds) public view returns (TokenErc1155s[] memory) {
+        IERC998ERC1155TopDownEnumerable target = IERC998ERC1155TopDownEnumerable(erc998);
+        IERC998ERC1155TopDown target_ = IERC998ERC1155TopDown(erc998);
+        TokenErc1155s[] memory allTokenErc1155s = new TokenErc1155s[](tokenIds.length);
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            uint256 tec = target.totalERC1155Contracts(tokenId);
+            uint256 maxErc1155Contracts = tec < limitErc1155Contracts ? tec : limitErc1155Contracts;
+            TokenErc1155s memory tokenErc1155sData = TokenErc1155s({totalERC1155Contracts: tec, erc1155Contracts: new Erc1155Contracts[](maxErc1155Contracts)});
+            allTokenErc1155s[i] = tokenErc1155sData;
+            for (uint256 j = 0; j < maxErc1155Contracts; j++) {
+                address erc1155Contact = target.erc1155ContractByIndex(tokenId, j);
+                uint256 tet = target.totalERC1155Tokens(tokenId, erc1155Contact);
+                uint256 maxErc1155TokenIds = tet < limitErc1155TokenIds ? tet : limitErc1155TokenIds;
+                Erc1155Contracts memory erc1155ContractData = Erc1155Contracts({erc1155Contract: erc1155Contact,  totalERC1155Tokens: tet, erc1155Tokens: new Erc1155Tokens[](maxErc1155TokenIds)});
+                tokenErc1155sData.erc1155Contracts[j] = erc1155ContractData;
+                for (uint256 k = 0; k < maxErc1155TokenIds; k++) {
+                    uint256 erc1155TokenId = target.erc1155TokenByIndex(tokenId, erc1155Contact, k);
+                    uint256 balance = target_.balanceOfERC1155(tokenId, erc1155Contact, erc1155TokenId);
+                    erc1155ContractData.erc1155Tokens[k] = Erc1155Tokens({erc1155TokenId : erc1155TokenId, amount : balance});
+                }
+            }
+        }
+        return allTokenErc1155s;
     }
 
-    function getDataByToken(address erc998, uint256 tokenId) public view returns (TokenChildren memory, TokenErc20s memory) {
+    function getErc1155ByToken(address erc998, uint256 tokenId) public view returns (TokenErc1155s memory) {
+        IERC998ERC1155TopDownEnumerable target = IERC998ERC1155TopDownEnumerable(erc998);
+        IERC998ERC1155TopDown target_ = IERC998ERC1155TopDown(erc998);
+        uint256 tec = target.totalERC1155Contracts(tokenId);
+        TokenErc1155s memory tokenErc1155sData = TokenErc1155s({totalERC1155Contracts: tec, erc1155Contracts: new Erc1155Contracts[](tec)});
+        for (uint256 j = 0; j < tec; j++) {
+            address erc1155Contact = target.erc1155ContractByIndex(tokenId, j);
+            uint256 tet = target.totalERC1155Tokens(tokenId, erc1155Contact);
+            Erc1155Contracts memory erc1155ContractData = Erc1155Contracts({erc1155Contract: erc1155Contact,  totalERC1155Tokens: tet, erc1155Tokens: new Erc1155Tokens[](tet)});
+            tokenErc1155sData.erc1155Contracts[j] = erc1155ContractData;
+            for (uint256 k = 0; k < tet; k++) {
+                uint256 erc1155TokenId = target.erc1155TokenByIndex(tokenId, erc1155Contact, k);
+                uint256 balance = target_.balanceOfERC1155(tokenId, erc1155Contact, erc1155TokenId);
+                erc1155ContractData.erc1155Tokens[k] = Erc1155Tokens({erc1155TokenId : erc1155TokenId, amount : balance});
+            }
+        }
+        return tokenErc1155sData;
+    }
+
+    function getData(address erc998, uint256 limitChildContracts, uint256 limitChildTokenIds,
+                     uint256 limitErc20Contracts, uint256 limitErc1155Contracts, uint256 limitErc1155TokenIds,
+                     uint256[] calldata tokenIds) public view returns (TokenChildren[] memory, TokenErc20s[] memory, TokenErc1155s[] memory) {
+        TokenChildren[] memory allTokenChildren = getErc721(erc998, limitChildContracts, limitChildTokenIds, tokenIds);
+        TokenErc20s[] memory allTokenErc20s = getErc20(erc998, limitErc20Contracts, tokenIds);
+        TokenErc1155s[] memory allTokenErc1155s = getErc1155(erc998, limitErc1155Contracts, limitErc1155TokenIds, tokenIds);
+        return (allTokenChildren, allTokenErc20s, allTokenErc1155s);
+    }
+
+    function getDataByToken(address erc998, uint256 tokenId) public view returns (TokenChildren memory, TokenErc20s memory, TokenErc1155s memory) {
         TokenChildren memory tokenChildrenData = getErc721ByToken(erc998, tokenId);
         TokenErc20s memory tokenErc20sData = getErc20ByToken(erc998, tokenId);
-        return (tokenChildrenData, tokenErc20sData);
+        TokenErc1155s memory tokenErc1155sData = getErc1155ByToken(erc998, tokenId);
+        return (tokenChildrenData, tokenErc20sData, tokenErc1155sData);
     }
 
 }
